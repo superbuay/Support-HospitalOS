@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="OPD Card 2" language="groovy" pageWidth="684" pageHeight="600" columnWidth="612" leftMargin="36" rightMargin="36" topMargin="0" bottomMargin="0" uuid="2a358b76-5344-434e-ada7-ac634536872f">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="173"/>
+	<style name="table">
+		<box>
+			<pen lineWidth="1.0" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_TH" mode="Opaque" backcolor="#E0FFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_CH" mode="Opaque" backcolor="#BFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_TD" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<subDataset name="Table Dataset 1" uuid="883c9de3-bc98-4227-8b54-8d170529dedb"/>
+	<subDataset name="dataset1" uuid="f4ed2d38-1be8-4746-b612-d05c320d83f4"/>
+	<parameter name="patient_hn" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$F{patient_hn}]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select t_patient.patient_hn
+,f_patient_prefix.patient_prefix_description
+|| ' ' || t_patient.patient_firstname
+|| ' ' || t_patient.patient_lastname as name
+,t_patient.patient_birthday
+,f_sex.sex_description
+,CASE WHEN t_patient.patient_birthday <> ''
+    then to_number(substring(' ' ||age(to_date((to_char(current_date,'YYYY-MM-DD') ), 'YYYY-MM-DD'), to_date(((to_number(substring(t_patient.patient_birthday, 1, 4), '9999') -543)
+|| substring(t_patient.patient_birthday, 5, 6)), 'YYYY-MM-DD')) from '(...)year'), '999') end as  year
+,t_patient.patient_house
+||' หมู่ '|| t_patient.patient_moo
+||' ถนน '|| t_patient.patient_road
+||' ตำบล '|| tambon.address_description
+||' อำเภอ '|| amphur.address_description
+||' จังหวัด '|| changwat.address_description as address
+,t_patient.patient_mother_firstname
+|| ' ' || t_patient.patient_mother_lastname as mother_name
+,t_patient.patient_father_firstname
+|| ' ' || t_patient.patient_father_lastname as father_name
+,nation.patient_nation_description
+,race.patient_nation_description
+,f_patient_occupation.patient_occupation_description
+,f_patient_marriage_status.patient_marriage_status_description
+,patient_contact_firstname
+|| ' ' || patient_contact_lastname as contact_name
+,patient_contact_house
+||' หมู่ '|| patient_contact_moo
+||' ถนน '|| patient_contact_road
+||' ตำบล '|| contact_tambon.address_description
+||' อำเภอ '|| contact_amphur.address_description
+||' จังหวัด '|| contact_changwat.address_description as contact_address
+,b_contract_plans.contract_plans_description
+,array_to_string(array_agg(item_drug_standard_description),', ') as drug_allergy
+,patient_record_date_time
+
+
+from t_patient
+
+inner join f_patient_prefix on t_patient.f_patient_prefix_id = f_patient_prefix.f_patient_prefix_id
+inner join f_sex on t_patient.f_sex_id = f_sex.f_sex_id
+inner join f_address as tambon on t_patient.patient_tambon = tambon.f_address_id
+inner join f_address as amphur on t_patient.patient_contact_amphur = amphur.f_address_id
+inner join f_address as changwat on t_patient.patient_contact_changwat = changwat.f_address_id
+inner join f_patient_nation as nation on t_patient.f_patient_nation_id = nation.f_patient_nation_id
+inner join f_patient_nation as race on t_patient.f_patient_race_id = race.f_patient_nation_id
+inner join f_patient_occupation on t_patient.f_patient_occupation_id = f_patient_occupation.f_patient_occupation_id
+inner join f_patient_marriage_status on t_patient.f_patient_marriage_status_id = f_patient_marriage_status.f_patient_marriage_status_id
+inner join f_address as contact_tambon on t_patient.patient_contact_tambon = contact_tambon.f_address_id
+inner join f_address as contact_amphur on t_patient.patient_contact_amphur = contact_amphur.f_address_id
+inner join f_address as contact_changwat on t_patient.patient_contact_changwat = contact_changwat.f_address_id
+
+inner join t_patient_payment on t_patient.t_patient_id = t_patient_payment.t_patient_id
+inner join b_contract_plans on t_patient_payment.b_contact_plans_id = b_contract_plans.b_contract_plans_id
+
+inner join t_patient_drug_allergy on t_patient.t_patient_id = t_patient_drug_allergy.t_patient_id
+inner join b_item_drug_standard on t_patient_drug_allergy.b_item_drug_standard_id=b_item_drug_standard.b_item_drug_standard_id
+
+where patient_hn = $P{patient_hn}
+
+Group by t_patient.patient_hn
+,f_patient_prefix.patient_prefix_description
+,t_patient.patient_firstname
+,t_patient.patient_lastname
+,t_patient.patient_birthday
+,f_sex.sex_description
+,t_patient.patient_house
+,t_patient.patient_moo
+,t_patient.patient_road
+,tambon.address_description
+,amphur.address_description
+,changwat.address_description
+,t_patient.patient_mother_firstname
+,t_patient.patient_mother_lastname
+,t_patient.patient_father_firstname
+,t_patient.patient_father_lastname
+,nation.patient_nation_description
+,race.patient_nation_description
+,f_patient_occupation.patient_occupation_description
+,f_patient_marriage_status.patient_marriage_status_description
+,patient_contact_firstname
+,patient_contact_lastname
+,patient_contact_house
+,patient_contact_moo
+,patient_contact_road
+,contact_tambon.address_description
+,contact_amphur.address_description
+,contact_changwat.address_description
+,b_contract_plans.contract_plans_description
+,patient_record_date_time]]>
+	</queryString>
+	<field name="patient_hn" class="java.lang.String"/>
+	<field name="name" class="java.lang.String"/>
+	<field name="patient_birthday" class="java.lang.String"/>
+	<field name="sex_description" class="java.lang.String"/>
+	<field name="year" class="java.math.BigDecimal"/>
+	<field name="address" class="java.lang.String"/>
+	<field name="mother_name" class="java.lang.String"/>
+	<field name="father_name" class="java.lang.String"/>
+	<field name="patient_nation_description" class="java.lang.String"/>
+	<field name="patient_occupation_description" class="java.lang.String"/>
+	<field name="patient_marriage_status_description" class="java.lang.String"/>
+	<field name="contact_name" class="java.lang.String"/>
+	<field name="contact_address" class="java.lang.String"/>
+	<field name="contract_plans_description" class="java.lang.String"/>
+	<field name="drug_allergy" class="java.lang.String"/>
+	<field name="patient_record_date_time" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="600">
+			<textField>
+				<reportElement uuid="3943dfb3-39a4-48da-bb99-6eae3d8ec93a" x="435" y="226" width="82" height="15"/>
+				<textElement>
+					<font fontName="TH SarabunPSK" size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{patient_hn}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="c896b8c7-81c9-4b5b-9a8f-d2210f42b503" x="75" y="304" width="79" height="14"/>
+				<textElement>
+					<font fontName="TH SarabunPSK" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{patient_birthday}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="230f82ce-2756-44c1-9cdb-86d3a5203e3e" x="208" y="304" width="37" height="14"/>
+				<textElement>
+					<font fontName="TH SarabunPSK" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{sex_description}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="9aa7a80c-db60-4c91-b2e4-5275f615d727" x="75" y="343" width="79" height="14"/>
+				<textElement>
+					<font fontName="TH SarabunPSK" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{patient_nation_description}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="640bcb1b-9da9-444c-92f2-feaff5d76929" x="75" y="357" width="79" height="14"/>
+				<textElement>
+					<font fontName="TH SarabunPSK" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{patient_nation_description}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="f9858fb6-b45b-4084-ba69-fa206b53d5b7" x="75" y="371" width="79" height="14"/>
+				<textElement>
+					<font fontName="TH SarabunPSK" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{patient_occupation_description}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="831c1137-a8b5-43fd-9919-e1f02a8b0706" x="75" y="385" width="79" height="14"/>
+				<textElement>
+					<font fontName="TH SarabunPSK" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{patient_marriage_status_description}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="7bb07c44-c513-4020-bdd5-bac16df5a8a3" x="88" y="529" width="151" height="13"/>
+				<textElement>
+					<font fontName="TH SarabunPSK" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{drug_allergy}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="48ae1e02-ea51-4d8e-a546-3278a2263489" x="88" y="549" width="79" height="13"/>
+				<textElement>
+					<font fontName="TH SarabunPSK" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{patient_record_date_time}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="01388dbb-be4b-4551-a013-e7b45a2b28c7" x="299" y="286" width="10" height="14"/>
+				<textElement>
+					<font fontName="TH SarabunPSK" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{year}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="e30e6b18-e67d-4ee2-bbe8-1aca752f701d" x="327" y="356" width="87" height="26"/>
+				<textElement>
+					<font fontName="TH SarabunPSK" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{contract_plans_description}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="09a4092c-3920-445f-b0fd-ae0371a2924f" x="299" y="306" width="115" height="48"/>
+				<textElement>
+					<font fontName="TH SarabunPSK" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{address}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="d8040e67-b6a7-4887-af33-8da595b86681" x="75" y="419" width="162" height="66"/>
+				<textElement>
+					<font fontName="TH SarabunPSK" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{contact_address}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="d388fd59-ab04-4364-bdfa-f842b961386b" x="92" y="261" width="203" height="21"/>
+				<textElement>
+					<font fontName="TH SarabunPSK" size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="7fcabcca-9326-44b2-9a1f-afcff612bd29" x="75" y="318" width="79" height="14"/>
+				<textElement>
+					<font fontName="TH SarabunPSK" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{mother_name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="9f2ff90d-2d66-4770-9ff5-f3c79c23e2a6" x="75" y="329" width="79" height="14"/>
+				<textElement>
+					<font fontName="TH SarabunPSK" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{father_name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="700097b8-9502-4afa-9fc9-3541943b349f" x="75" y="399" width="79" height="14"/>
+				<textElement>
+					<font fontName="TH SarabunPSK" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{contact_name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="09a4092c-3920-445f-b0fd-ae0371a2924f" x="310" y="159" width="160" height="13"/>
+				<textElement>
+					<font fontName="TH SarabunPSK" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{address}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="48ae1e02-ea51-4d8e-a546-3278a2263489" x="329" y="180" width="79" height="13"/>
+				<textElement>
+					<font fontName="TH SarabunPSK" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{patient_record_date_time}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>
